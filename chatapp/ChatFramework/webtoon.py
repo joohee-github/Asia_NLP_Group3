@@ -139,6 +139,9 @@ def predict_class(sentense,model,data_len,classes,words,stop_word=[]):
     class_value = classes[np.argmax(predict_value[0])]
     return class_value, predict_value
 
+def _predict_class(sentence) :
+     return predict_class(sentence,gerne_model,gerne_model_data['words'],gerne_classes,gerne_words,stop_word=stop_word)
+
 #######################################################################################################
 
 
@@ -164,7 +167,4 @@ def main_scenario():
     data_set = add_user_sentence(context,gerne)
     cosine_sim, idx_dict = cosine_similarity(data_set)
     print(get_recommendations(data_set, idx_dict, cosine_sim))
-
-main_scenario()
-
 #######################################################################################################
