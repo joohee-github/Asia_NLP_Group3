@@ -10,7 +10,7 @@ from konlpy.tag import Okt
 
 # 가상 sentence 
 
-sentence = '힙합 알앤비 풍의 새벽 밤에 듣기 좋은 시원한 재즈 추천해줘'
+sentence = '신나는 아이돌 노래 추천해줘'
 
 
 #-------------sentence 전처리--------------#
@@ -20,7 +20,7 @@ def music_preprocessing_sentence(sentence):
     okt= Okt()
     okt_tokens = okt.pos(sentence)
     stopPos = ['Josa','Verb']
-    stopWord = '듣기 좋은 추천해줘 추천 같은 처럼 같이 들으면 듣고 싶어 풍 추천 '
+    stopWord = '듣기 좋은 추천해줘 추천 같은 처럼 같이 들으면 듣고 싶어 풍 추천 적 법 때 노래 닐 나'
     stopWord = stopWord.split()
 
     word = []
@@ -58,11 +58,13 @@ def music_make_user_model(sentence):
     
     unique_x = music_get_unique_x('chatapp/ChatFramework/data/music/music_tag.csv')
     favor_label = np.zeros((len(unique_x)))
+    sentence = music_preprocessing_sentence(sentence)
 
-    for i in range(len(unique_x)):
-        for favor in sentence:  
-            if favor in unique_x[i]:
-                favor_label[i] += 1                
+    for word in sentence:
+        for i in range(len(unique_x)):
+            if word in unique_x[i]:
+                favor_label[i] += 1 
+
     max_class = int(np.max(favor_label))
     
     return unique_x, favor_label, max_class
@@ -127,7 +129,7 @@ def music_fit_and_evaluate():
                   optimizer= 'rmsprop',
                  metrics =['accuracy'])
     
-    model.fit(X_train,y_train, batch_size = 128, epochs = 10, verbose = 1, validation_split = 0.1)
+    model.fit(X_train,y_train, batch_size = 128, epochs = 6, verbose = 1, validation_split = 0.1)
     results = model.evaluate(X_test, y_test, batch_size = 128, verbose = 0)
     
     # 정확도 확인
@@ -141,21 +143,21 @@ def music_fit_and_evaluate():
 def music_prediction():
     
     return_data = pd.read_csv('chatapp/ChatFramework/data/music/music_title.csv')
-    return_featue = return_data['특징']
+    return_feature = return_data['특징']
     t = Tokenizer(num_words = 500) 
-    t.fit_on_texts(return_featue)
-    return_data2 = t.texts_to_matrix(return_featue, mode = 'count')
+    t.fit_on_texts(return_feature)
+    return_feature = t.texts_to_matrix(return_feature, mode = 'count')
     
     
-    return return_data, return_data2
+    return return_data, return_feature
 
 #-------------모델 예측----------------#
 
 def music_apply_predict():
     
     model = music_fit_and_evaluate()
-    return_data, return_data2 = music_prediction()    
-    predict_value = model.predict(return_data2)
+    return_data, return_feature = music_prediction()    
+    predict_value = model.predict(return_feature)
     
     predict_label = []
     
@@ -184,7 +186,6 @@ def get_answer(_sentence):
        
     global sentence
     sentence = _sentence
-    _sentence = music_preprocessing_sentence(_sentence)
     unique_x, favor_label, max_class = music_make_user_model(_sentence)
     answer = music_return_to_page() 
 
